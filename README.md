@@ -7,7 +7,7 @@ Benjamín Aldana (242143)
 Alejandro Sagui (25480)
 Juan Pablo Castañeda (251086)
 Kenneth Maldonado (241295)
-Daniel López 
+Daniel López (242159)
 
 
 
