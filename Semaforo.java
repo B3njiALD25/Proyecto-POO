@@ -1,35 +1,60 @@
+
 import java.util.*;
 
-public class Semaforo {
 
+public class Semaforo {
     private String colorActual;
     private int tiempoVerde;
     private int tiempoAmarillo;
     private int tiempoRojo;
-
+    private int tiempoRestante; 
 
     public Semaforo(String colorActual, int tiempoVerde, int tiempoAmarillo, int tiempoRojo) {
         if (colorActual == null || colorActual.isBlank()) colorActual = "ROJO";
-        this.colorActual = colorActual.toUpperCase();
+        this.colorActual = colorActual.toUpperCase(); 
         this.tiempoVerde = tiempoVerde;
         this.tiempoAmarillo = tiempoAmarillo;
         this.tiempoRojo = tiempoRojo;
+        this.tiempoRestante = getDuracionColor(this.colorActual);
     }
 
 
-    public void cambiarColor() {
-        String c = (colorActual == null) ? "ROJO" : colorActual.toUpperCase();
-        switch (c) {
-            case "VERDE":
+    // Cambia el color al siguiente en el ciclo y reinicia el tiempoRestante
+    private void cambiarColorAutomatico() {
+        switch (colorActual) { 
+            case "VERDE": 
                 colorActual = "AMARILLO";
+                tiempoRestante = tiempoAmarillo;
                 break;
             case "AMARILLO":
                 colorActual = "ROJO";
+                tiempoRestante = tiempoRojo;
                 break;
             case "ROJO":
             default:
                 colorActual = "VERDE";
+                tiempoRestante = tiempoVerde;
                 break;
+        }
+    }
+
+    // Método para avanzar el semáforo delta t unidades de tiempo
+    public void actualizar(int deltaT) { 
+        if (deltaT <= 0) return;
+        tiempoRestante -= deltaT;
+        while (tiempoRestante <= 0) {
+            cambiarColorAutomatico();
+            tiempoRestante += getDuracionColor(colorActual);
+        }
+        tiempoRestante = Math.max(tiempoRestante, 0);
+    }
+
+    private int getDuracionColor(String color) {
+        switch (color) {
+            case "VERDE": return tiempoVerde;
+            case "AMARILLO": return tiempoAmarillo;
+            case "ROJO": return tiempoRojo;
+            default: return tiempoRojo;
         }
     }
 
@@ -43,6 +68,8 @@ public class Semaforo {
         this.tiempoVerde = tiempoVerde;
         this.tiempoAmarillo = tiempoAmarillo;
         this.tiempoRojo = tiempoRojo;
+        int dur = getDuracionColor(colorActual);
+        if (tiempoRestante > dur) tiempoRestante = dur;
     }
 
     public int getTiempoVerde() {
@@ -57,9 +84,26 @@ public class Semaforo {
         return tiempoRojo;
     }
 
+    public int getTiempoRestante() {
+        return tiempoRestante;
+    }
+
+    // Método para verificar si el semáforo está en una fase específica
+    public boolean estaEnFase(String fase) {
+        return colorActual.equals(fase.toUpperCase());
+    }
+
+    // Método para obtener el progreso de la fase actual (0.0 segundos a 1.0 segundos)
+    public double getProgresoFase() {
+        int duracionTotal = getDuracionColor(colorActual);
+        if (duracionTotal == 0) return 1.0;
+        return 1.0 - (double) tiempoRestante / duracionTotal;
+    }
+
     public String toString() {
         return "Semaforo{" +
                 "colorActual='" + colorActual + '\'' +
+                ", tiempoRestante=" + tiempoRestante +
                 ", tiempoVerde=" + tiempoVerde +
                 ", tiempoAmarillo=" + tiempoAmarillo +
                 ", tiempoRojo=" + tiempoRojo +
